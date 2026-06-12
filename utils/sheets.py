@@ -1,7 +1,7 @@
 import streamlit as st
 import gspread
-from google.oauth2.service_account import Credentials
 import pandas as pd
+from google.oauth2.service_account import Credentials
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -20,9 +20,23 @@ def get_client():
 
 def get_accounts():
     client = get_client()
+    sheet = client.open("FamilyFinanceDB").worksheet("Accounts")
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
 
+
+def add_account(owner, bank, account_name, balance, account_type):
+    client = get_client()
     sheet = client.open("FamilyFinanceDB").worksheet("Accounts")
 
-    data = sheet.get_all_records()
+    rows = sheet.get_all_values()
+    next_id = len(rows)
 
-    return pd.DataFrame(data)
+    sheet.append_row([
+        next_id,
+        owner,
+        bank,
+        account_name,
+        balance,
+        account_type,
+    ])
